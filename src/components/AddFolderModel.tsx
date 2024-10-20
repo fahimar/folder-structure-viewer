@@ -6,6 +6,7 @@ interface AddFolderModalProps {
   onRequestClose: () => void;
   onAddFolder: (name: string, parentId: string) => void;
   parentId: string;
+  folderName: string;
 }
 
 const AddFolderModal: React.FC<AddFolderModalProps> = ({
@@ -14,7 +15,7 @@ const AddFolderModal: React.FC<AddFolderModalProps> = ({
   onAddFolder,
   parentId,
 }) => {
-  const [folderName, setFolderName] = useState("");
+  const [folderName, setFolderName] = useState<string>("");
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();

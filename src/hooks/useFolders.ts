@@ -4,7 +4,7 @@ import axios from "axios";
 interface Folder {
   id: string;
   name: string;
-  parentId?: string;
+  parentId?: string | null;
   children?: Folder[];
 }
 
@@ -13,17 +13,26 @@ export const useFolders = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  // backend API
+  // Fetch folders from the backend API
   useEffect(() => {
     const fetchFolders = async () => {
       setLoading(true);
       setError(null);
 
       try {
-        const response = await axios.get<Folder[]>(
-          "http://localhost:5000/api/folders/"
+        const response = await axios.get("http://localhost:5000/api/folders/");
+
+        // Map _id to id and build the folder tree structure
+        const mappedFolders = mapFoldersToTree(
+          response.data.map((folder: any) => ({
+            id: folder._id,
+            name: folder.name,
+            parentId: folder.parentId || null,
+            children: [],
+          }))
         );
-        setFolders(response.data);
+
+        setFolders(mappedFolders);
       } catch (err) {
         console.error("Error fetching folders:", err);
         setError(
@@ -38,7 +47,7 @@ export const useFolders = () => {
   }, []);
 
   // Add a folder via API
-  const addFolder = async (name: string, parentId: string) => {
+  const addFolder = async (name: string, parentId: string | null) => {
     setError(null); // Reset error
 
     try {
@@ -46,7 +55,14 @@ export const useFolders = () => {
         name,
         parentId,
       });
-      const newFolder: Folder = response.data;
+
+      const newFolder: Folder = {
+        id: response.data._id,
+        name: response.data.name,
+        parentId: response.data.parentId || null,
+        children: [],
+      };
+
       const updatedFolders = addFolderToTree(folders, parentId, newFolder);
       setFolders(updatedFolders);
     } catch (err) {
@@ -67,10 +83,8 @@ export const useFolders = () => {
     setError(null);
 
     try {
-      // Make API call to delete the folder
       await axios.delete(`http://localhost:5000/api/folders/${folderId}`);
 
-      // Update the local folder tree by removing the deleted folder
       const updatedFolders = deleteFolderFromTree(folders, folderId);
       setFolders(updatedFolders);
     } catch (err) {
@@ -84,22 +98,50 @@ export const useFolders = () => {
   return { folders, addFolder, deleteFolder, loading, error };
 };
 
+// tree structure
+const mapFoldersToTree = (folders: Folder[]): Folder[] => {
+  const folderMap: { [key: string]: Folder } = {};
+
+  folders.forEach((folder) => {
+    folderMap[folder.id] = { ...folder, children: [] };
+  });
+
+  const rootFolders: Folder[] = [];
+
+  // build the folder tree
+  folders.forEach((folder) => {
+    if (folder.parentId) {
+      folderMap[folder.parentId].children!.push(folderMap[folder.id]);
+    } else {
+      rootFolders.push(folderMap[folder.id]);
+    }
+  });
+
+  return rootFolders;
+};
+
 // Helper function to add a folder to the tree
 const addFolderToTree = (
   folders: Folder[],
-  parentId: string,
+  parentId: string | null,
   newFolder: Folder
 ): Folder[] => {
+  if (!parentId) {
+    return [...folders, newFolder];
+  }
+
   return folders.map((folder) => {
     if (folder.id === parentId) {
       return { ...folder, children: [...(folder.children || []), newFolder] };
     }
+
     if (folder.children) {
       return {
         ...folder,
         children: addFolderToTree(folder.children, parentId, newFolder),
       };
     }
+
     return folder;
   });
 };
