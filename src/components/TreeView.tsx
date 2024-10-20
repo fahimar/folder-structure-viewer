@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import DeleteFolderModal from "./DeleteFolderModel";
 
 interface Folder {
   id: string;
@@ -10,16 +11,34 @@ interface TreeViewProps {
   folder: Folder;
   onAddFolder: (parentId: string) => void;
   onDeleteFolder: (folderId: string) => void;
+  error?: string;
 }
 
 const TreeView: React.FC<TreeViewProps> = ({
   folder,
   onAddFolder,
   onDeleteFolder,
+  error,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [selectedFolderId, setSelectedFolderId] = useState<string>("");
 
   const toggleExpand = () => setIsExpanded(!isExpanded);
+
+  const handleOpenDeleteModal = (folderId: string) => {
+    setSelectedFolderId(folderId);
+    setDeleteModalOpen(true);
+  };
+
+  const handleCloseDeleteModal = () => {
+    setDeleteModalOpen(false);
+  };
+
+  const handleConfirmDeleteFolder = () => {
+    onDeleteFolder(selectedFolderId);
+    setDeleteModalOpen(false);
+  };
 
   return (
     <div className="pl-4">
@@ -30,7 +49,7 @@ const TreeView: React.FC<TreeViewProps> = ({
         {folder.id !== "root" && (
           <button
             className="bg-red-500 text-white px-2 py-1 rounded-full"
-            onClick={() => onDeleteFolder(folder.id)}
+            onClick={() => handleOpenDeleteModal(folder.id)}
           >
             X
           </button>
@@ -54,6 +73,7 @@ const TreeView: React.FC<TreeViewProps> = ({
                 folder={child}
                 onAddFolder={onAddFolder}
                 onDeleteFolder={onDeleteFolder}
+                error={error}
               />
             ))}
           </div>
@@ -61,6 +81,17 @@ const TreeView: React.FC<TreeViewProps> = ({
           <div className="pl-4 text-gray-500">- No folders</div>
         )
       ) : null}
+
+      {error && <div className="text-red-500 mt-2">{error}</div>}
+
+      {/* Delete Folder Modal */}
+      <DeleteFolderModal
+        isOpen={isDeleteModalOpen}
+        onRequestClose={handleCloseDeleteModal}
+        onDeleteFolder={handleConfirmDeleteFolder}
+        folderName={folder.name}
+        folderId={selectedFolderId}
+      />
     </div>
   );
 };

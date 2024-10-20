@@ -22,13 +22,15 @@ const Page: React.FC = () => {
     setSelectedFolderName(folderName);
     setDeleteModalOpen(true);
   };
+  // if (loading) return <div>Loading...</div>;
+  // if (error) return <div className="text-red-500">Error: {error}</div>;
 
   return (
     <div className="p-4">
       <h1 className="text-3xl font-bold mb-6">Folder Structure Viewer</h1>
 
       {loading && <div>Loading...</div>}
-      {error && <div>{error}</div>}
+      {error && <div className="text-red-500">{error}</div>}
 
       {folders.map((folder) => (
         <TreeView
