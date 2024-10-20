@@ -49,6 +49,7 @@ const Page: React.FC = () => {
         onRequestClose={() => setAddModalOpen(false)}
         onAddFolder={addFolder}
         parentId={selectedFolderId}
+        folderName={selectedFolderName}
       />
 
       <DeleteFolderModal

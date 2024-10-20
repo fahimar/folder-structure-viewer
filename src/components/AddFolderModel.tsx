@@ -1,3 +1,4 @@
+//AddFolderModal
 import React, { useState } from "react";
 import Modal from "react-modal";
 
@@ -14,13 +15,14 @@ const AddFolderModal: React.FC<AddFolderModalProps> = ({
   onRequestClose,
   onAddFolder,
   parentId,
+  folderName,
 }) => {
-  const [folderName, setFolderName] = useState<string>("");
+  const [newFolderName, setNewFolderName] = useState<string>("");
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-    onAddFolder(folderName, parentId);
-    setFolderName("");
+    onAddFolder(newFolderName, parentId);
+    setNewFolderName("");
     onRequestClose();
   };
   console.log("Parent ID:", parentId);
@@ -33,21 +35,19 @@ const AddFolderModal: React.FC<AddFolderModalProps> = ({
       overlayClassName="fixed inset-0 bg-black bg-opacity-50"
     >
       <div className="bg-white p-6 rounded-md w-96">
-        {" "}
-        {/* Width adjusted to match the design */}
         <h2 className="text-lg font-semibold mb-4">
-          Add folder in <span className="font-bold">"{parentId}"</span>
+          Add folder in <span className="font-bold">"{folderName}"</span>{" "}
         </h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <label htmlFor="folderName" className="text-sm">
+            <label htmlFor="newFolderName" className="text-sm">
               Folder name
             </label>
             <input
-              id="folderName"
+              id="newFolderName"
               type="text"
-              value={folderName}
-              onChange={(e) => setFolderName(e.target.value)}
+              value={newFolderName}
+              onChange={(e) => setNewFolderName(e.target.value)}
               placeholder="Folder name"
               className="border border-gray-300 rounded p-2 w-full"
               required

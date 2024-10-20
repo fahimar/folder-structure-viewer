@@ -83,7 +83,15 @@ export const useFolders = () => {
     setError(null);
 
     try {
-      await axios.delete(`http://localhost:5000/api/folders/${folderId}`);
+      console.log("Deleting folder with ID:", folderId);
+
+      // Make API call to delete the folder
+      const response = await axios.delete(
+        `http://localhost:5000/api/folders/${folderId}`
+      );
+      if (response.status !== 200) {
+        throw new Error("Failed to delete folder on backend.");
+      }
 
       const updatedFolders = deleteFolderFromTree(folders, folderId);
       setFolders(updatedFolders);
@@ -108,7 +116,6 @@ const mapFoldersToTree = (folders: Folder[]): Folder[] => {
 
   const rootFolders: Folder[] = [];
 
-  // build the folder tree
   folders.forEach((folder) => {
     if (folder.parentId) {
       folderMap[folder.parentId].children!.push(folderMap[folder.id]);
