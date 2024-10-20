@@ -18,6 +18,7 @@ export const useFolders = () => {
     const fetchFolders = async () => {
       setLoading(true);
       setError(null);
+
       try {
         const response = await axios.get<Folder[]>(
           "http://localhost:5000/api/folders/"
@@ -38,7 +39,8 @@ export const useFolders = () => {
 
   // Add a folder via API
   const addFolder = async (name: string, parentId: string) => {
-    setError(null); // Reset error before making the API call
+    setError(null); // Reset error
+
     try {
       const response = await axios.post("http://localhost:5000/api/folders/", {
         name,
@@ -56,10 +58,19 @@ export const useFolders = () => {
   };
 
   // Delete a folder via API
-  const deleteFolder = async (folderId: string) => {
+  const deleteFolder = async (folderId: string | undefined) => {
+    if (!folderId) {
+      setError("Folder ID is undefined. Cannot delete folder.");
+      return;
+    }
+
     setError(null);
+
     try {
+      // Make API call to delete the folder
       await axios.delete(`http://localhost:5000/api/folders/${folderId}`);
+
+      // Update the local folder tree by removing the deleted folder
       const updatedFolders = deleteFolderFromTree(folders, folderId);
       setFolders(updatedFolders);
     } catch (err) {

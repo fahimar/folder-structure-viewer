@@ -4,7 +4,7 @@ import Modal from "react-modal";
 interface DeleteFolderModalProps {
   isOpen: boolean;
   onRequestClose: () => void;
-  onDeleteFolder: () => void; 
+  onDeleteFolder: () => void;
   folderName: string;
   folderId: string;
 }
@@ -14,7 +14,9 @@ const DeleteFolderModal: React.FC<DeleteFolderModalProps> = ({
   onRequestClose,
   onDeleteFolder,
   folderName,
+  folderId,
 }) => {
+  console.log("Folder ID:", folderId);
   return (
     <Modal
       isOpen={isOpen}
@@ -34,7 +36,7 @@ const DeleteFolderModal: React.FC<DeleteFolderModalProps> = ({
             Cancel
           </button>
           <button
-            onClick={onDeleteFolder} 
+            onClick={onDeleteFolder}
             className="px-4 py-2 rounded border border-red-500 text-red-500"
           >
             Delete

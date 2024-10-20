@@ -10,7 +10,7 @@ interface Folder {
 interface TreeViewProps {
   folder: Folder;
   onAddFolder: (parentId: string) => void;
-  onDeleteFolder: (folderId: string) => void;
+  onDeleteFolder: (folderId: string, folderName: string) => void;
   error?: string;
 }
 
@@ -21,23 +21,35 @@ const TreeView: React.FC<TreeViewProps> = ({
   error,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [selectedFolderId, setSelectedFolderId] = useState<string>("");
+
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedFolderId, setSelectedFolderId] = useState<string | undefined>(
+    undefined
+  );
+  const [selectedFolderName, setSelectedFolderName] = useState<
+    string | undefined
+  >(undefined);
 
   const toggleExpand = () => setIsExpanded(!isExpanded);
 
-  const handleOpenDeleteModal = (folderId: string) => {
+  const handleOpenDeleteModal = (folderId: string, folderName: string) => {
     setSelectedFolderId(folderId);
-    setDeleteModalOpen(true);
+    setSelectedFolderName(folderName);
+    setIsDeleteModalOpen(true);
   };
 
   const handleCloseDeleteModal = () => {
-    setDeleteModalOpen(false);
+    setIsDeleteModalOpen(false);
+    setSelectedFolderId(undefined);
+    setSelectedFolderName(undefined);
   };
 
-  const handleConfirmDeleteFolder = () => {
-    onDeleteFolder(selectedFolderId);
-    setDeleteModalOpen(false);
+  // Call the onDeleteFolder method in parent with selectedFolderId
+  const handleDeleteFolder = () => {
+    if (selectedFolderId) {
+      onDeleteFolder(selectedFolderId, selectedFolderName || "");
+      setIsDeleteModalOpen(false);
+    }
   };
 
   return (
@@ -49,7 +61,7 @@ const TreeView: React.FC<TreeViewProps> = ({
         {folder.id !== "root" && (
           <button
             className="bg-red-500 text-white px-2 py-1 rounded-full"
-            onClick={() => handleOpenDeleteModal(folder.id)}
+            onClick={() => handleOpenDeleteModal(folder.id, folder.name)}
           >
             X
           </button>
@@ -63,34 +75,31 @@ const TreeView: React.FC<TreeViewProps> = ({
           </button>
         </div>
       </div>
-      {/* Handle expanded view and children */}
-      {isExpanded ? (
-        folder.children && folder.children.length > 0 ? (
-          <div>
-            {folder.children.map((child) => (
-              <TreeView
-                key={child.id}
-                folder={child}
-                onAddFolder={onAddFolder}
-                onDeleteFolder={onDeleteFolder}
-                error={error}
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="pl-4 text-gray-500">- No folders</div>
-        )
+
+      {isExpanded && folder.children && folder.children.length > 0 ? (
+        <div className="pl-4">
+          {folder.children.map((child) => (
+            <TreeView
+              key={child.id}
+              folder={child}
+              onAddFolder={onAddFolder}
+              onDeleteFolder={onDeleteFolder}
+              error={error}
+            />
+          ))}
+        </div>
+      ) : isExpanded ? (
+        <div className="pl-4 text-gray-500">- No folders</div>
       ) : null}
 
       {error && <div className="text-red-500 mt-2">{error}</div>}
 
-      {/* Delete Folder Modal */}
       <DeleteFolderModal
         isOpen={isDeleteModalOpen}
         onRequestClose={handleCloseDeleteModal}
-        onDeleteFolder={handleConfirmDeleteFolder}
-        folderName={folder.name}
-        folderId={selectedFolderId}
+        onDeleteFolder={handleDeleteFolder}
+        folderName={selectedFolderName || ""}
+        folderId={selectedFolderId || ""}
       />
     </div>
   );

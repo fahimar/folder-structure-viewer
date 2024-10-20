@@ -22,6 +22,7 @@ const AddFolderModal: React.FC<AddFolderModalProps> = ({
     setFolderName("");
     onRequestClose();
   };
+  console.log("Parent ID:", parentId);
 
   return (
     <Modal
